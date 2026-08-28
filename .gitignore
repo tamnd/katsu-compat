@@ -1,0 +1,7 @@
+/target
+# Node's test suite is vendored by `katsu-compat vendor` rather than committed. It carries
+# its own license and it is roughly forty thousand files.
+/vendor
+/results
+node_modules
+.DS_Store

@@ -1,0 +1,47 @@
+name: Full Node.js suite
+
+# The whole suite takes long enough that running it per commit would be a waste, and it is
+# not a gate on anything yet because katsu cannot execute JavaScript. It runs weekly so the
+# control numbers stay current, and on demand so anyone can produce a report.
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      node_tag:
+        description: The nodejs/node tag to run the suite from.
+        default: v24.18.0
+      runtime:
+        description: Runtime binary to test. `node` produces a control run.
+        default: node
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    name: Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: Swatinem/rust-cache@v2.9.2
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "24"
+      - run: cargo build --release
+      - run: ./target/release/katsu-compat vendor --tag ${{ inputs.node_tag || 'v24.18.0' }}
+      - name: Run the suite
+        run: |
+          ./target/release/katsu-compat run \
+            --runtime "${{ inputs.runtime || 'node' }}" \
+            --out results/latest.json \
+            --markdown results/latest.md
+      - name: Publish the table into the run summary
+        if: always()
+        run: cat results/latest.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: compatibility-report
+          path: results/

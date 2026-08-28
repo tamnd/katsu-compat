@@ -1,0 +1,37 @@
+[package]
+name = "katsu-compat"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+description = "Runs the Node.js test suite and a corpus of real npm packages against a JavaScript runtime, and reports the pass rate per module with every failure named."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tamnd/katsu-compat"
+publish = false
+
+[[bin]]
+name = "katsu-compat"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.6", features = ["derive"] }
+rayon = "1.12.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+walkdir = "2.5.0"
+
+[lints.rust]
+# unreachable_pub is deliberately absent. This is a binary crate with no library target, so
+# every item in it is unreachable from outside and the lint fires on all of them.
+missing_debug_implementations = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+# Doc comments here are English prose that explains why, not identifier soup.
+doc_markdown = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[profile.release]
+opt-level = 2
